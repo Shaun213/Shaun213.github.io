@@ -1,86 +1,22 @@
-// ----------------------------
-// UI.JS - HUD & INTERACTIONS
-// ----------------------------
+const UI = {
+    render(game) {
+        // FPS & Stats
+        document.getElementById('fps').innerText = `FPS: ${System.fps}`;
+        document.getElementById('mc').innerText = `MC: $${game.mc}`;
+        document.getElementById('wave').innerText = `WAVE: ${game.wave}`;
+        document.getElementById('mult').innerText = `X${game.multiplier}`;
+        
+        // Health Bar
+        const hb = document.getElementById('hp-inner');
+        hb.style.width = `${game.hp}%`;
+        hb.style.background = game.hp < 30 ? '#ff0000' : '#00ff00';
 
-// ----------------------------
-// GET HUD ELEMENTS
-// ----------------------------
-const fpsCounter = document.getElementById("fpsCounter");
-const moneyDisplay = document.getElementById("moneyDisplay");
-const scoreDisplay = document.getElementById("scoreDisplay");
-const waveDisplay = document.getElementById("waveDisplay");
-const healthDisplay = document.getElementById("healthDisplay");
-const powerUpDisplay = document.getElementById("powerUpDisplay");
+        // Airstrike Indicator
+        document.getElementById('airstrike-btn').style.opacity = game.killsSinceDeath >= 15 ? '1' : '0.3';
+    },
 
-const buyTeammateBtn = document.getElementById("buyTeammateBtn");
-const buyWeaponPistolBtn = document.getElementById("buyWeaponPistolBtn");
-const buyWeaponRifleBtn = document.getElementById("buyWeaponRifleBtn");
-const buyWeaponMeleeBtn = document.getElementById("buyWeaponMeleeBtn");
-
-// ----------------------------
-// BUY BUTTON EVENTS
-// ----------------------------
-buyTeammateBtn.onclick = ()=>{
-    if(player.money>=100){
-        player.money-=100;
-        spawnTeammate();
+    toggleShop() {
+        const s = document.getElementById('shop');
+        s.style.display = s.style.display === 'none' ? 'grid' : 'none';
     }
 };
-
-buyWeaponPistolBtn.onclick = ()=>{
-    if(player.money>=50){
-        player.money-=50;
-        player.weapons.pistol=true;
-    }
-};
-
-buyWeaponRifleBtn.onclick = ()=>{
-    if(player.money>=200){
-        player.money-=200;
-        player.weapons.rifle=true;
-    }
-};
-
-buyWeaponMeleeBtn.onclick = ()=>{
-    if(player.money>=100){
-        player.money-=100;
-        player.weapons.melee=true;
-    }
-};
-
-// ----------------------------
-// FPS COUNTER
-// ----------------------------
-let fpsHistory = [];
-function updateFPS(){
-    const fps = 1/deltaTime;
-    fpsHistory.push(fps);
-    if(fpsHistory.length>20) fpsHistory.shift();
-    const avg = Math.round(fpsHistory.reduce((a,b)=>a+b)/fpsHistory.length);
-    fpsCounter.innerText = "FPS: " + avg;
-}
-
-// ----------------------------
-// UPDATE HUD
-// ----------------------------
-function updateHUD(){
-    moneyDisplay.innerText = "Money: " + Math.floor(player.money);
-    scoreDisplay.innerText = "Score: " + player.score;
-    waveDisplay.innerText = "Wave: " + waveNumber;
-    healthDisplay.innerText = "Health: " + Math.floor(player.health) + "/" + player.maxHealth;
-
-    if(powerUps.length>0){
-        powerUpDisplay.innerText = "Power-ups: " + powerUps.map(p=>p.type).join(", ");
-    } else powerUpDisplay.innerText = "Power-ups: None";
-}
-
-// ----------------------------
-// AUTOMATIC HUD UPDATE
-// ----------------------------
-function animateHUD(){
-    updateFPS();
-    updateHUD();
-    requestAnimationFrame(animateHUD);
-}
-
-animateHUD();
