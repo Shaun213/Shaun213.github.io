@@ -1,7 +1,8 @@
-// ui.js
+// ui.js — HUD, Shop, Settings, FPS
 const fpsCounter = document.getElementById("fpsCounter");
 let showFPS = true, lastTime = performance.now(), frame=0, fps=0;
 
+// HUD
 function drawHUD(){
   frame++;
   const now = performance.now();
