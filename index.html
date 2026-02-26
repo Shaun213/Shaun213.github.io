@@ -1,38 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Zombie Strike: Blox Edition</title>
+    <title>ZOMBIE STRIKE: ELITE</title>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; }
-        #gui { position: absolute; top: 10px; left: 10px; pointer-events: none; width: 100%; }
-        .card { background: rgba(0,0,0,0.6); padding: 15px; border-radius: 15px; border-bottom: 5px solid rgba(0,0,0,0.3); display: inline-block; }
-        #hp-bar { width: 300px; height: 30px; background: #333; border-radius: 15px; overflow: hidden; margin-top: 10px; }
-        #hp-fill { height: 100%; background: #00ff00; transition: 0.3s; }
-        #shop-ui { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: #fff; color: #333; padding: 20px; border-radius: 20px; display: none; pointer-events: all; }
-        button { background: #00a2ff; border: none; color: white; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; margin: 5px; }
-        #fps { position: absolute; bottom: 5px; left: 5px; font-size: 10px; color: #666; }
+        body { margin: 0; background: #000; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; user-select: none; }
+        #hud { position: absolute; top: 20px; left: 20px; width: 100%; pointer-events: none; display: flex; flex-direction: column; gap: 10px; }
+        .blox-card { background: rgba(0,0,0,0.8); border: 3px solid #333; padding: 15px; border-radius: 15px; border-bottom: 6px solid #111; display: inline-block; pointer-events: none; }
+        #hp-bar { width: 300px; height: 15px; background: #222; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        #hp-fill { height: 100%; width: 100%; transition: 0.2s ease-out; }
+        
+        #military-shop { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: #fff; color: #000; padding: 25px; border-radius: 20px; display: none; border-bottom: 8px solid #ccc; }
+        button { background: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; border-bottom: 4px solid #2980b9; margin-bottom: 10px; width: 100%; }
+        button:hover { transform: translateY(2px); border-bottom-width: 2px; }
+        
+        #streak-ui { color: #e74c3c; font-size: 18px; text-shadow: 2px 2px #000; }
+        #fps-counter { position: absolute; bottom: 5px; left: 5px; font-size: 10px; color: #444; }
     </style>
 </head>
 <body>
-    <div id="fps">FPS: 60</div>
-    <div id="gui">
-        <div class="card">
-            <div id="cash">💰 $1000</div>
-            <div id="weapon">🔫 Pistol</div>
-            <div id="hp-bar"><div id="hp-inner"></div></div>
+    <div id="fps-counter">FPS: 60</div>
+    <div id="hud">
+        <div class="blox-card">
+            <div id="mc-display" style="color: #f1c40f; font-size: 28px;">💰 $2500</div>
+            <div id="weapon-txt" style="font-size: 14px; opacity: 0.7;">TACTICAL PISTOL</div>
+            <div id="hp-bar"><div id="hp-fill"></div></div>
+            <div id="wave-num" style="margin-top: 10px;">WAVE 1</div>
         </div>
-        <div id="air-indicator" style="color: #ff3e3e; font-size: 20px; margin-top: 10px;">🔥 AIRSTRIKE READY (G)</div>
+        <div id="streak-ui">🔥 AIRSTRIKE READY (G)</div>
     </div>
 
-    <div id="shop-ui">
-        <h2>SOLDIER SHOP</h2>
-        <button onclick="Game.buyTeammate('Rifleman')">Buy Rifleman ($1500)</button><br>
-        <button onclick="UI.showShop()">CLOSE</button>
+    <div id="military-shop">
+        <h2 style="margin-top: 0;">REINFORCEMENTS</h2>
+        <button onclick="Game.buySoldier('RIFLE')">RIFLEMAN ($1000)</button>
+        <button onclick="Game.buySoldier('HEAVY')">HEAVY GUNNER ($2500)</button>
+        <button onclick="UI.toggleShop()" style="background: #95a5a6; border-color: #7f8c8d;">CLOSE</button>
     </div>
 
-    <button style="position: absolute; right: 20px; bottom: 20px; pointer-events: all;" onclick="UI.showShop()">SHOP (P)</button>
+    <div style="position: absolute; right: 20px; bottom: 20px;">
+        <button onclick="UI.toggleShop()" style="width: auto;">OPEN SHOP (P)</button>
+    </div>
 
     <canvas id="gameCanvas"></canvas>
+
     <script src="system.js"></script>
     <script src="ui.js"></script>
     <script src="game.js"></script>
