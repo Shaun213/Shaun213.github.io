@@ -1,45 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ZOMBIE STRIKE: BLOX ELITE</title>
     <style>
-        body { margin: 0; background: #0c0c0c; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; user-select: none; }
-        #hud { position: absolute; top: 20px; left: 20px; pointer-events: none; width: 100%; }
-        .blox-card { background: rgba(0,0,0,0.85); padding: 20px; border-radius: 18px; border-left: 6px solid #f1c40f; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #hp-bar { width: 300px; height: 14px; background: #222; border-radius: 7px; margin-top: 10px; overflow: hidden; }
-        #hp-fill { height: 100%; background: #2ecc71; width: 100%; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-        #xp-bar { width: 200px; height: 6px; background: #111; border-radius: 3px; margin-top: 8px; }
-        #xp-fill { height: 100%; background: #3498db; width: 0%; }
-        .tablet { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; color: #333; padding: 30px; border-radius: 25px; display: none; width: 450px; box-shadow: 0 15px 0 #bbb; pointer-events: all; }
-        .btn { background: #3498db; color: white; padding: 15px; border-radius: 12px; margin: 8px; cursor: pointer; text-align: center; border-bottom: 5px solid #2980b9; pointer-events: all; }
-        #shop-btn { position: absolute; right: 20px; bottom: 20px; }
+        body { margin: 0; background: #000; color: #fff; font-family: 'Arial Black', sans-serif; overflow: hidden; }
+        #hud { position: absolute; top: 20px; left: 20px; pointer-events: none; }
+        .card { background: rgba(0,0,0,0.8); padding: 25px; border-radius: 20px; border-left: 8px solid #f1c40f; }
+        #hp-bar { width: 300px; height: 15px; background: #222; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        #hp-fill { height: 100%; background: #2ecc71; width: 100%; transition: 0.3s; }
+        #xp-bar { width: 200px; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; }
+        #xp-fill { height: 100%; background: #3498db; width: 0%; transition: 0.3s; }
+        .tablet { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); 
+                   background: #fff; color: #333; padding: 40px; border-radius: 30px; display: none; width: 400px; box-shadow: 0 15px 0 #999; }
+        .btn { background: #3498db; color: #fff; padding: 15px 30px; border-radius: 15px; cursor: pointer; text-align: center; border-bottom: 5px solid #2980b9; pointer-events: all; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="hud">
-        <div class="blox-card">
-            <div style="color: #f1c40f; font-size: 36px;">💰 $<span id="mc-val">2500</span></div>
-            <div id="weapon-display" style="font-size: 14px; opacity: 0.8; letter-spacing: 1px;">TACTICAL PISTOL</div>
+        <div class="card">
+            <div id="cash-txt" style="font-size: 38px; color: #f1c40f;">💰 $2500</div>
+            <div id="weapon-txt" style="opacity: 0.7; font-size: 14px;">TACTICAL PISTOL</div>
             <div id="hp-bar"><div id="hp-fill"></div></div>
             <div id="xp-bar"><div id="xp-fill"></div></div>
-            <div id="wave-display" style="margin-top: 12px; font-size: 18px;">WAVE 1</div>
-            <div id="air-ready" style="color: #e67e22; font-size: 16px; margin-top: 5px; display: none;">🔥 AIRSTRIKE READY (G)</div>
+            <div id="air-ready" style="color: #e67e22; margin-top: 10px;">🔥 AIRSTRIKE READY (G)</div>
         </div>
     </div>
 
-    <div id="shop-menu" class="tablet">
-        <h2 style="text-align: center; margin-top: 0;">🛠 REINFORCEMENTS</h2>
-        <div class="btn" onclick="Game.buyWeapon('UZI', 1500)">BUY UZI ($1500)</div>
-        <div class="btn" onclick="Game.buyWeapon('SHOTGUN', 3000)">BUY SHOTGUN ($3000)</div>
-        <div class="btn" onclick="Game.buySquad('RIFLEMAN', 2000)">RIFLEMAN SQUAD ($2000)</div>
+    <div id="shop-tablet" class="tablet">
+        <h2 style="text-align: center;">BATTLE SHOP</h2>
+        <div class="btn" onclick="Game.buySquad()">BUY REINFORCEMENTS ($2000)</div><br>
         <div class="btn" style="background: #95a5a6; border-color: #7f8c8d;" onclick="UI.toggleShop()">CLOSE</div>
     </div>
 
-    <div class="btn" id="shop-btn" onclick="UI.toggleShop()">OPEN SHOP (P)</div>
+    <div class="btn" style="position: absolute; right: 20px; bottom: 20px;" onclick="UI.toggleShop()">OPEN SHOP (P)</div>
     <canvas id="gameCanvas"></canvas>
-
-    <script src="system.js"></script>
-    <script src="ui.js"></script>
-    <script src="game.js"></script>
+    <script src="system.js"></script><script src="ui.js"></script><script src="game.js"></script>
 </body>
 </html>
