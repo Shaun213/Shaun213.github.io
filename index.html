@@ -2,270 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Block Survival Defense</title>
+<title>Zombie Strike Military Arcade</title>
 <style>
-body { margin:0; overflow:hidden; background:black; font-family:Arial; }
-#ui {
-position:absolute;
-top:10px;
-left:10px;
-color:white;
-z-index:10;
-}
-#fps {
-position:absolute;
-top:10px;
-right:10px;
-color:#0f0;
-}
-#centerMessage {
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-color:white;
-font-size:40px;
-display:none;
-}
-button {
-padding:8px;
-margin-top:5px;
-cursor:pointer;
-}
+  body { margin:0; overflow:hidden; background:#000; color:#fff; font-family:sans-serif; }
+  #gameCanvas { display:block; margin:0 auto; background:#111; }
+  #menu, #settingsUI, #shopUI { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; flex-direction:column; }
+  button { margin:5px; padding:10px 20px; font-size:16px; cursor:pointer; }
+  #fpsCounter { position:absolute; top:5px; left:5px; color:#0f0; font-size:16px; }
 </style>
 </head>
 <body>
-
-<div id="ui">
-<div id="wave">Wave: 1</div>
-<div id="money">Money: 0</div>
-<div id="health">Base HP: 100</div>
-<button onclick="upgradeDamage()">Upgrade Damage ($50)</button>
+<canvas id="gameCanvas" width="900" height="600"></canvas>
+<div id="menu">
+  <h1>Zombie Strike Military Arcade</h1>
+  <label>Choose Avatar Color:</label>
+  <input type="color" id="avatarColor" value="#00ff00">
+  <label>Choose Game Mode:</label>
+  <select id="gameMode">
+    <option value="arcade">Arcade</option>
+    <option value="survival">Survival</option>
+    <option value="hardcore">Hardcore</option>
+  </select>
+  <button id="startGameBtn">Start Game</button>
+  <button id="openSettingsBtn">Settings</button>
+  <button id="openShopBtn">Shop</button>
 </div>
 
-<div id="fps"></div>
-<div id="centerMessage"></div>
+<div id="settingsUI" style="display:none;">
+  <h2>Settings</h2>
+  <label>Difficulty: <input type="range" id="difficultySlider" min="1" max="3" value="1"></label>
+  <label>FPS Display: <input type="checkbox" id="fpsToggle" checked></label>
+  <button id="closeSettingsBtn">Back</button>
+</div>
 
-<script type="module">
+<div id="shopUI" style="display:none;">
+  <h2>Buy Teammates</h2>
+  <button id="buyTeammateBtn">Buy Teammate ($100)</button>
+  <button id="closeShopBtn">Back</button>
+</div>
 
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
+<div id="fpsCounter"></div>
 
-let scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x000000, 30, 150);
-
-let camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
-let renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
-
-let clock = new THREE.Clock();
-
-let ambient = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambient);
-
-let sun = new THREE.DirectionalLight(0xffffff, 1);
-sun.position.set(20,40,20);
-sun.castShadow = true;
-scene.add(sun);
-
-let ground = new THREE.Mesh(
-new THREE.PlaneGeometry(200,200),
-new THREE.MeshStandardMaterial({color:0x222222})
-);
-ground.rotation.x = -Math.PI/2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-let player = new THREE.Mesh(
-new THREE.BoxGeometry(1,2,1),
-new THREE.MeshStandardMaterial({color:0x00aaff})
-);
-player.position.y = 1;
-player.castShadow = true;
-scene.add(player);
-
-let base = new THREE.Mesh(
-new THREE.BoxGeometry(3,3,3),
-new THREE.MeshStandardMaterial({color:0xff0000})
-);
-base.position.set(0,1.5,0);
-base.castShadow = true;
-scene.add(base);
-
-let bullets = [];
-let zombies = [];
-
-let keys = {};
-let mouseDown = false;
-let damage = 10;
-let money = 0;
-let wave = 1;
-let baseHP = 100;
-let night = false;
-let waveTimer = 0;
-
-document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-document.addEventListener("mousedown", () => mouseDown = true);
-document.addEventListener("mouseup", () => mouseDown = false);
-
-window.addEventListener("mousemove", e=>{
-let x = (e.clientX / innerWidth)*2 -1;
-let y = -(e.clientY / innerHeight)*2 +1;
-let vector = new THREE.Vector3(x,y,0.5).unproject(camera);
-let dir = vector.sub(camera.position).normalize();
-let distance = -camera.position.y / dir.y;
-let pos = camera.position.clone().add(dir.multiplyScalar(distance));
-player.lookAt(pos.x, player.position.y, pos.z);
-});
-
-function spawnZombie(isBoss=false){
-let size = isBoss ? 4 : 2;
-let zombie = new THREE.Mesh(
-new THREE.BoxGeometry(size,size,size),
-new THREE.MeshStandardMaterial({color:isBoss?0xaa00ff:0x00ff00})
-);
-zombie.position.set(
-(Math.random()-0.5)*150,
-size/2,
-(Math.random()-0.5)*150
-);
-zombie.userData = {
-hp: isBoss?200:40 + wave*5,
-speed: isBoss?0.8:1 + wave*0.05,
-boss:isBoss
-};
-zombie.castShadow = true;
-scene.add(zombie);
-zombies.push(zombie);
-}
-
-function shoot(){
-let bullet = new THREE.Mesh(
-new THREE.SphereGeometry(0.2,8,8),
-new THREE.MeshBasicMaterial({color:0xffff00})
-);
-bullet.position.copy(player.position);
-bullet.position.y +=1;
-bullet.userData.velocity = new THREE.Vector3(0,0,-1)
-.applyQuaternion(player.quaternion)
-.multiplyScalar(2);
-scene.add(bullet);
-bullets.push(bullet);
-}
-
-function updatePlayer(delta){
-let speed = keys["shift"]?8:5;
-if(keys["w"]) player.translateZ(-speed*delta);
-if(keys["s"]) player.translateZ(speed*delta);
-if(keys["a"]) player.translateX(-speed*delta);
-if(keys["d"]) player.translateX(speed*delta);
-
-camera.position.lerp(
-new THREE.Vector3(
-player.position.x,
-player.position.y+8,
-player.position.z+12
-),0.1);
-camera.lookAt(player.position);
-}
-
-function updateBullets(){
-for(let i=bullets.length-1;i>=0;i--){
-let b = bullets[i];
-b.position.add(b.userData.velocity);
-if(b.position.length()>200){
-scene.remove(b);
-bullets.splice(i,1);
-continue;
-}
-for(let j=zombies.length-1;j>=0;j--){
-let z = zombies[j];
-if(b.position.distanceTo(z.position)<1.5){
-z.userData.hp -= damage;
-scene.remove(b);
-bullets.splice(i,1);
-if(z.userData.hp<=0){
-money+= z.userData.boss?100:10;
-scene.remove(z);
-zombies.splice(j,1);
-}
-break;
-}
-}
-}
-}
-
-function updateZombies(delta){
-zombies.forEach(z=>{
-let target = z.position.distanceTo(player.position)<20?player.position:base.position;
-let dir = target.clone().sub(z.position).normalize();
-z.position.add(dir.multiplyScalar(z.userData.speed*delta*5));
-if(z.position.distanceTo(base.position)<2){
-baseHP -= 0.1;
-}
-});
-}
-
-function updateDayNight(delta){
-waveTimer += delta;
-if(waveTimer>30){
-night = !night;
-waveTimer = 0;
-if(night){
-for(let i=0;i<wave*5;i++) spawnZombie();
-if(wave%5==0) spawnZombie(true);
-}else{
-wave++;
-}
-}
-ambient.intensity = night?0.2:0.6;
-sun.intensity = night?0.2:1;
-}
-
-function upgradeDamage(){
-if(money>=50){
-money-=50;
-damage+=5;
-}
-}
-
-window.upgradeDamage = upgradeDamage;
-
-let fpsCounter = document.getElementById("fps");
-let lastTime = performance.now();
-
-function animate(){
-requestAnimationFrame(animate);
-let delta = clock.getDelta();
-
-if(mouseDown) shoot();
-
-updatePlayer(delta);
-updateBullets();
-updateZombies(delta);
-updateDayNight(delta);
-
-document.getElementById("wave").innerText = "Wave: "+wave;
-document.getElementById("money").innerText = "Money: "+money;
-document.getElementById("health").innerText = "Base HP: "+Math.floor(baseHP);
-
-if(baseHP<=0){
-document.getElementById("centerMessage").style.display="block";
-document.getElementById("centerMessage").innerText="GAME OVER";
-}
-
-renderer.render(scene,camera);
-
-let now = performance.now();
-let fps = 1000/(now-lastTime);
-lastTime = now;
-fpsCounter.innerText = "FPS: "+fps.toFixed(0);
-}
-
-animate();
-
-</script>
+<script src="system.js"></script>
+<script src="game.js"></script>
+<script src="ui.js"></script>
 </body>
 </html>
