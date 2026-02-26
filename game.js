@@ -1,236 +1,106 @@
-// ----------------------------
-// GAME.JS - 3D WORLD & ANIMATION
-// ----------------------------
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-let scene, camera, renderer, clock, deltaTime;
-let playerMesh, groundMesh;
+let game = {
+    mc: 500, hp: 100, wave: 1, multiplier: 1, killsSinceDeath: 0,
+    player: { x: canvas.width/2, y: canvas.height/2, ammo: 30 },
+    zombies: [], bullets: [], squad: [], airstrikes: []
+};
 
-// ----------------------------
-// START GAME
-// ----------------------------
-function startGame() {
-    // Scene & Camera
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87ceeb);
-
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 15, 25);
-    camera.lookAt(0, 0, 0);
-
-    // Renderer
-    renderer = new THREE.WebGLRenderer({canvas: document.getElementById("gameCanvas"), antialias:true});
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    clock = new THREE.Clock();
-
-    // Ground
-    let groundGeo = new THREE.PlaneGeometry(100, 100);
-    let groundMat = new THREE.MeshStandardMaterial({color:0x228822});
-    groundMesh = new THREE.Mesh(groundGeo, groundMat);
-    groundMesh.rotation.x = -Math.PI/2;
-    scene.add(groundMesh);
-
-    // Lights
-    let dirLight = new THREE.DirectionalLight(0xffffff,1);
-    dirLight.position.set(20,50,20);
-    scene.add(dirLight);
-    scene.add(new THREE.AmbientLight(0xffffff,0.4));
-
-    // Initialize player mesh
-    let geom = new THREE.BoxGeometry(1,2,1);
-    let mat = new THREE.MeshStandardMaterial({color: document.getElementById("avatarColor").value});
-    playerMesh = new THREE.Mesh(geom, mat);
-    playerMesh.position.copy(player.position);
-    scene.add(playerMesh);
-
-    // Spawn first wave
-    spawnNextWave();
-
-    // Spawn some power-ups for demo
-    spawnPowerUp("health");
-    spawnPowerUp("ammo");
-    spawnPowerUp("speed");
-
-    // Animate loop
-    animate();
-}
-
-// ----------------------------
-// PLAYER MOVEMENT
-// ----------------------------
-let keys = {w:false,a:false,s:false,d:false};
-
-document.addEventListener("keydown",(e)=>{
-    if(e.key=="w") keys.w=true;
-    if(e.key=="s") keys.s=true;
-    if(e.key=="a") keys.a=true;
-    if(e.key=="d") keys.d=true;
-});
-document.addEventListener("keyup",(e)=>{
-    if(e.key=="w") keys.w=false;
-    if(e.key=="s") keys.s=false;
-    if(e.key=="a") keys.a=false;
-    if(e.key=="d") keys.d=false;
-});
-
-// ----------------------------
-// SHOOTING
-// ----------------------------
-document.addEventListener("click", ()=>{
-    let dir = {x:0, y:0, z:-1};
-    if(player.currentWeapon=="pistol" && player.weapons.pistol) shootBullet(player.position, dir, weaponUpgrades.pistol.damage);
-    if(player.currentWeapon=="rifle" && player.weapons.rifle) shootBullet(player.position, dir, weaponUpgrades.rifle.damage);
-    if(player.currentWeapon=="melee" && player.weapons.melee){
-        if(zombies.length>0) zombies[0].health -= weaponUpgrades.melee.damage;
+class Soldier {
+    constructor(type, offset) {
+        this.type = type;
+        this.offset = offset;
+        this.x = game.player.x; this.y = game.player.y;
+        this.cd = 0;
     }
-});
+    update(dt) {
+        // Follow Player
+        let tx = game.player.x + this.offset.x;
+        let ty = game.player.y + this.offset.y;
+        this.x += (tx - this.x) * 0.05;
+        this.y += (ty - this.y) * 0.05;
 
-// ----------------------------
-// MOVE PLAYER
-// ----------------------------
-function movePlayer(){
-    if(keys.w) player.position.z -= player.speed * deltaTime;
-    if(keys.s) player.position.z += player.speed * deltaTime;
-    if(keys.a) player.position.x -= player.speed * deltaTime;
-    if(keys.d) player.position.x += player.speed * deltaTime;
-    playerMesh.position.copy(player.position);
-}
-
-// ----------------------------
-// CREATE MESHES
-// ----------------------------
-function createZombieMesh(z){
-    if(z.mesh) return;
-    let geom = new THREE.BoxGeometry(z.boss?3:1, z.boss?4:2, z.boss?3:1);
-    let mat = new THREE.MeshStandardMaterial({color: zombieTypes[z.type].color});
-    z.mesh = new THREE.Mesh(geom, mat);
-    z.mesh.position.copy(z.position);
-    scene.add(z.mesh);
-}
-
-function createTeammateMesh(tm){
-    if(tm.mesh) return;
-    let geom = new THREE.BoxGeometry(1,2,1);
-    let mat = new THREE.MeshStandardMaterial({color:0x00ff00});
-    tm.mesh = new THREE.Mesh(geom, mat);
-    tm.mesh.position.copy(tm.position);
-    scene.add(tm.mesh);
-}
-
-function createPowerUpMesh(pu){
-    if(pu.mesh) return;
-    let geom = new THREE.SphereGeometry(0.5,16,16);
-    let mat = new THREE.MeshStandardMaterial({color:0xffff00});
-    pu.mesh = new THREE.Mesh(geom, mat);
-    pu.mesh.position.copy(pu.position);
-    scene.add(pu.mesh);
-}
-
-// ----------------------------
-// UPDATE ZOMBIES
-// ----------------------------
-function updateZombies(){
-    zombies.forEach((z,i)=>{
-        createZombieMesh(z);
-        let dx = player.position.x - z.position.x;
-        let dz = player.position.z - z.position.z;
-        let dist = Math.sqrt(dx*dx + dz*dz);
-        z.position.x += (dx/dist) * z.speed * deltaTime;
-        z.position.z += (dz/dist) * z.speed * deltaTime;
-        if(dist<1.5) player.health -= z.damage*deltaTime;
-        if(z.health<=0){
-            scene.remove(z.mesh);
-            zombies.splice(i,1);
-            player.money += 10;
-            player.score += 10;
+        // Auto-Targeting
+        let target = game.zombies[0];
+        if (target && System.dist(this.x, this.y, target.x, target.y) < 400) {
+            if (this.cd <= 0) {
+                this.shoot(target);
+                this.cd = this.type === 'HEAVY' ? 5 : 20;
+            }
         }
-        z.mesh.position.copy(z.position);
+        this.cd--;
+    }
+    shoot(t) {
+        game.bullets.push({x: this.x, y: this.y, angle: Math.atan2(t.y - this.y, t.x - this.x), speed: 15, dmg: 10});
+    }
+}
+
+function spawnZombie() {
+    let isBoss = game.wave % 5 === 0 && game.zombies.length === 0;
+    game.zombies.push({
+        x: Math.random() * canvas.width, y: -50,
+        hp: isBoss ? 2000 : 20 * game.wave,
+        maxHp: isBoss ? 2000 : 20 * game.wave,
+        isBoss: isBoss,
+        speed: isBoss ? 0.5 : 1 + Math.random()
+    });
+}
+
+function loop(time) {
+    const dt = System.update(time);
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Render Squad
+    game.squad.forEach(s => {
+        s.update(dt);
+        ctx.fillStyle = s.type === 'HEAVY' ? '#f1c40f' : '#3498db';
+        ctx.fillRect(s.x-15, s.y-15, 30, 30);
     });
 
-    bosses.forEach((b,i)=>{
-        createZombieMesh(b);
-        let dx = player.position.x - b.position.x;
-        let dz = player.position.z - b.position.z;
-        let dist = Math.sqrt(dx*dx + dz*dz);
-        b.position.x += (dx/dist) * b.speed * deltaTime;
-        b.position.z += (dz/dist) * b.speed * deltaTime;
-        if(dist<2) player.health -= b.damage*deltaTime;
-        if(b.health<=0){
-            scene.remove(b.mesh);
-            bosses.splice(i,1);
-            player.money += 100;
-            player.score += 100;
-            bossSpawned=false;
+    // Update Zombies
+    for (let i = game.zombies.length - 1; i >= 0; i--) {
+        let z = game.zombies[i];
+        let angle = Math.atan2(game.player.y - z.y, game.player.x - z.x);
+        z.x += Math.cos(angle) * z.speed;
+        z.y += Math.sin(angle) * z.speed;
+
+        // Draw Zombie
+        ctx.fillStyle = z.isBoss ? '#e74c3c' : '#2ecc71';
+        ctx.fillRect(z.x-10, z.y-10, z.isBoss ? 50 : 20, z.isBoss ? 50 : 20);
+
+        // Damage Player
+        if (System.dist(z.x, z.y, game.player.x, game.player.y) < 30) {
+            game.hp -= 0.1;
+            game.multiplier = 1; // Reset multiplier on hit
         }
-        b.mesh.position.copy(b.position);
+    }
+
+    // Draw Particles
+    System.particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size || 2, p.size || 2);
     });
+    ctx.globalAlpha = 1;
+
+    UI.render(game);
+    requestAnimationFrame(loop);
 }
 
-// ----------------------------
-// UPDATE TEAMMATES
-// ----------------------------
-function updateTeammates(){
-    teammates.forEach(tm=>{
-        createTeammateMesh(tm);
-        let dx = player.position.x - tm.position.x;
-        let dz = player.position.z - tm.position.z;
-        let dist = Math.sqrt(dx*dx + dz*dz);
-        if(dist>3){
-            tm.position.x += dx*deltaTime*2;
-            tm.position.z += dz*deltaTime*2;
-        }
-        if(tm.shootCooldown<=0 && zombies.length>0){
-            let nearest = zombies.reduce((a,b)=>(Math.hypot(b.position.x-tm.position.x,b.position.z-tm.position.z)<Math.hypot(a.position.x-tm.position.x,a.position.z-tm.position.z)?b:a));
-            shootBullet(tm.position,{x:nearest.position.x-tm.position.x,y:0,z:nearest.position.z-tm.position.z}, weaponUpgrades.pistol.damage);
-            tm.shootCooldown=1;
-        } else tm.shootCooldown-=deltaTime;
-        tm.mesh.position.copy(tm.position);
-    });
-}
+// Controls & Purchases
+window.buySquad = (type) => {
+    let prices = {RIFLE: 1000, HEAVY: 2000, MEDIC: 1500};
+    if (game.mc >= prices[type] && game.squad.length < 3) {
+        game.mc -= prices[type];
+        let offset = {x: (game.squad.length + 1) * -40, y: 40};
+        game.squad.push(new Soldier(type, offset));
+    }
+};
 
-// ----------------------------
-// UPDATE BULLETS
-// ----------------------------
-function updateBullets(){
-    bullets.forEach((b,i)=>{
-        b.position.x += b.direction.x*10*deltaTime;
-        b.position.y += b.direction.y*10*deltaTime;
-        b.position.z += b.direction.z*10*deltaTime;
-
-        zombies.forEach((z,j)=>{
-            let dist = Math.sqrt((b.position.x-z.position.x)**2 + (b.position.z-z.position.z)**2);
-            if(dist<1){ z.health -= b.damage; bullets.splice(i,1); }
-        });
-
-        bosses.forEach((b2,j)=>{
-            let dist = Math.sqrt((b.position.x-b2.position.x)**2 + (b.position.z-b2.position.z)**2);
-            if(dist<1){ b2.health -= b.damage; bullets.splice(i,1); }
-        });
-    });
-}
-
-// ----------------------------
-// UPDATE POWER-UPS
-// ----------------------------
-function updatePowerUps(){
-    powerUps.forEach(pu=>{
-        createPowerUpMesh(pu);
-        pu.mesh.position.copy(pu.position);
-    });
-    collectPowerUps();
-}
-
-// ----------------------------
-// ANIMATE LOOP
-// ----------------------------
-function animate(){
-    deltaTime = clock.getDelta();
-    movePlayer();
-    updateZombies();
-    updateTeammates();
-    updateBullets();
-    updatePowerUps();
-
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
-}
+System.init();
+setInterval(spawnZombie, 2000);
+requestAnimationFrame(loop);
