@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Zombie Strike Military Arcade</title>
+<title>Zombie Strike 3D</title>
 <style>
-  body { margin:0; overflow:hidden; background:#000; color:#fff; font-family:sans-serif; }
-  #gameCanvas { display:block; margin:0 auto; background:#111; }
-  #menu, #settingsUI, #shopUI { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; flex-direction:column; }
-  button { margin:5px; padding:10px 20px; font-size:16px; cursor:pointer; }
-  #fpsCounter { position:absolute; top:5px; left:5px; color:#0f0; font-size:16px; }
+body { margin:0; overflow:hidden; font-family:sans-serif; background:#000; color:#fff; }
+canvas { display:block; }
+#menu, #settingsUI, #shopUI { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; flex-direction:column; }
+button { margin:5px; padding:10px 20px; font-size:16px; cursor:pointer; }
+#fpsCounter { position:absolute; top:5px; left:5px; color:#0f0; font-size:16px; }
 </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="900" height="600"></canvas>
+<canvas id="gameCanvas"></canvas>
+
 <div id="menu">
-  <h1>Zombie Strike Military Arcade</h1>
-  <label>Choose Avatar Color:</label>
+  <h1>Zombie Strike 3D</h1>
+  <label>Avatar Color:</label>
   <input type="color" id="avatarColor" value="#00ff00">
-  <label>Choose Game Mode:</label>
+  <label>Game Mode:</label>
   <select id="gameMode">
     <option value="arcade">Arcade</option>
     <option value="survival">Survival</option>
@@ -43,6 +44,7 @@
 
 <div id="fpsCounter"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
 <script src="system.js"></script>
 <script src="game.js"></script>
 <script src="ui.js"></script>
