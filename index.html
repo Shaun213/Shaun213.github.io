@@ -1,86 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Zombie Strike 3D Indie</title>
-<style>
-body { margin:0; overflow:hidden; font-family:sans-serif; background:#222; color:#fff; }
-#menu { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; }
-#menu h1 { font-size:3em; color:#ff5555; margin-bottom:20px; text-shadow:2px 2px #000; }
-#gameCanvas { display:none; width:100%; height:100%; }
-#hud { position:absolute; top:10px; left:10px; z-index:10; color:#fff; font-size:16px; background: rgba(0,0,0,0.5); padding:10px; border-radius:10px; font-family:Verdana, sans-serif;}
-button { padding:10px 20px; margin:5px; cursor:pointer; font-size:16px; border:none; border-radius:5px; background:#ff5555; color:#fff; transition:0.2s; }
-button:hover { background:#ff7777; }
-label, select, input { margin:5px; font-size:16px; }
-</style>
+    <title>ZOMBIE STRIKE: MILITARY ARCADE</title>
+    <style>
+        body { margin: 0; background: #000; color: #0f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; user-select: none; }
+        #hud { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; pointer-events: none; display: flex; justify-content: space-between; }
+        .stat { background: rgba(0,20,0,0.8); border: 2px solid #0f0; padding: 10px; font-weight: bold; min-width: 100px; text-align: center; }
+        #hp-bar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 500px; height: 15px; border: 2px solid #0f0; }
+        #hp-inner { width: 100%; height: 100%; background: #0f0; transition: 0.2s; }
+        #shop { position: absolute; right: 20px; top: 100px; background: rgba(0,0,0,0.9); border: 2px solid #0f0; padding: 20px; display: none; }
+        button { background: #0f0; color: #000; border: none; padding: 10px; margin: 5px; cursor: pointer; font-weight: bold; width: 100%; }
+        button:hover { background: #fff; }
+        #fps { position: absolute; bottom: 10px; left: 10px; font-size: 12px; }
+    </style>
 </head>
 <body>
+    <div id="fps">FPS: 60</div>
+    <div id="hud">
+        <div class="stat" id="mc">MC: $500</div>
+        <div class="stat" id="wave">WAVE: 1</div>
+        <div class="stat" id="mult">X1</div>
+        <button id="airstrike-btn" style="width:150px; pointer-events:all;">AIRSTRIKE (G)</button>
+    </div>
 
-<div id="menu">
-  <h1>Zombie Strike 3D</h1>
-  <label>Avatar Color: <input type="color" id="avatarColor" value="#ff0000"></label>
-  <label>Difficulty:
-    <select id="difficulty">
-      <option value="easy">Easy</option>
-      <option value="normal" selected>Normal</option>
-      <option value="hard">Hard</option>
-    </select>
-  </label>
-  <label>Game Mode:
-    <select id="gameMode">
-      <option value="arcade">Arcade</option>
-      <option value="survival">Survival</option>
-      <option value="hardcore">Hardcore</option>
-    </select>
-  </label>
-  <button id="startBtn">Start Game</button>
-</div>
+    <div id="shop">
+        <h3>REINFORCEMENTS</h3>
+        <button onclick="buySquad('RIFLE')">RIFLEMAN ($1000)</button>
+        <button onclick="buySquad('HEAVY')">HEAVY GUNNER ($2000)</button>
+        <button onclick="buySquad('MEDIC')">MEDIC ($1500)</button>
+        <button onclick="UI.toggleShop()">CLOSE</button>
+    </div>
 
-<canvas id="gameCanvas"></canvas>
+    <div id="hp-bar"><div id="hp-inner"></div></div>
+    
+    <button onclick="UI.toggleShop()" style="position:absolute; right:20px; bottom:20px; width:100px; pointer-events:all;">SHOP (P)</button>
 
-<div id="hud">
-  <div id="fpsCounter">FPS: 0</div>
-  <div id="moneyDisplay">Money: 0</div>
-  <div id="scoreDisplay">Score: 0</div>
-  <div id="waveDisplay">Wave: 1</div>
-  <div id="healthDisplay">Health: 100</div>
-  <div id="powerUpDisplay">Power-ups: None</div>
-  <button id="buyTeammateBtn">Buy Teammate $100</button>
-  <button id="buyWeaponPistolBtn">Buy Pistol $50</button>
-  <button id="buyWeaponRifleBtn">Buy Rifle $200</button>
-  <button id="buyWeaponMeleeBtn">Buy Melee $100</button>
-</div>
+    <canvas id="gameCanvas"></canvas>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script>
-<script src="system.js"></script>
-<script src="game.js"></script>
-<script src="ui.js"></script>
-
-<script>
-document.getElementById("startBtn").onclick = ()=>{
-    document.getElementById("menu").style.display="none";
-    const canvas = document.getElementById("gameCanvas");
-    canvas.style.display="block";
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    setGameMode(document.getElementById("gameMode").value);
-
-    // Reset player
-    player.position = {x:0, y:1, z:0};
-    player.health = player.maxHealth;
-    player.money = 0;
-    player.score = 0;
-
-    // Spawn power-ups and first wave
-    spawnPowerUp("health");
-    spawnPowerUp("ammo");
-    spawnPowerUp("speed");
-    spawnNextWave();
-
-    startGame();
-}
-</script>
-
+    <script src="system.js"></script>
+    <script src="ui.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
