@@ -1,38 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>ZOMBIE STRIKE: ELITE ARCADE</title>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: 'Arial Black', sans-serif; overflow: hidden; }
-        #hud { position: absolute; top: 20px; left: 20px; pointer-events: none; }
-        .card { background: rgba(0,0,0,0.8); padding: 25px; border-radius: 20px; border-left: 8px solid #f1c40f; }
-        #hp-bar { width: 300px; height: 15px; background: #222; border-radius: 10px; overflow: hidden; margin-top: 10px; }
-        #hp-fill { height: 100%; background: #2ecc71; width: 100%; transition: 0.3s; }
-        #xp-bar { width: 200px; height: 6px; background: #111; margin-top: 8px; border-radius: 3px; }
-        #xp-fill { height: 100%; background: #3498db; width: 0%; transition: 0.3s; }
-        .tablet { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); 
-                   background: #fff; color: #333; padding: 40px; border-radius: 30px; display: none; width: 400px; box-shadow: 0 15px 0 #999; }
-        .btn { background: #3498db; color: #fff; padding: 15px 30px; border-radius: 15px; cursor: pointer; text-align: center; border-bottom: 5px solid #2980b9; pointer-events: all; font-weight: bold; }
+        :root { --army-green: #4b5320; --gold: #f1c40f; --danger: #e74c3c; --info: #3498db; }
+        body { margin: 0; background: #050505; color: #fff; font-family: 'Bahnschrift', sans-serif; overflow: hidden; user-select: none; }
+        #hud { position: absolute; top: 20px; left: 20px; width: 100%; pointer-events: none; }
+        .hud-card { background: rgba(0,0,0,0.9); padding: 25px; border-radius: 15px; border-left: 8px solid var(--gold); display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .mc-text { font-size: 42px; color: var(--gold); font-weight: 900; }
+        #hp-bar { width: 350px; height: 12px; background: #222; border-radius: 6px; margin-top: 10px; overflow: hidden; }
+        #hp-fill { height: 100%; background: #2ecc71; width: 100%; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        .multiplier-tag { font-size: 28px; color: var(--danger); font-style: italic; }
+        
+        /* Tactical Tablet UI */
+        .tablet { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; color: #333; padding: 40px; border-radius: 30px; display: none; width: 600px; box-shadow: 0 20px 0 #999; pointer-events: all; }
+        .tab-content { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .btn { background: var(--info); color: white; padding: 18px; border-radius: 12px; cursor: pointer; text-align: center; border-bottom: 5px solid #2980b9; font-weight: bold; font-size: 18px; }
+        .btn:active { transform: translateY(3px); border-bottom-width: 2px; }
+        .btn.locked { background: #95a5a6; border-color: #7f8c8d; cursor: not-allowed; }
+        #fps-box { position: absolute; bottom: 5px; left: 5px; font-size: 12px; color: #444; }
     </style>
 </head>
 <body>
+    <div id="fps-box">FPS: 60</div>
     <div id="hud">
-        <div class="card">
-            <div id="cash-txt" style="font-size: 38px; color: #f1c40f;">💰 $2500</div>
-            <div id="weapon-txt" style="opacity: 0.7; font-size: 14px;">TACTICAL PISTOL</div>
+        <div class="hud-card">
+            <div class="mc-text">💰 $<span id="mc-display">0</span></div>
+            <div id="weapon-name" style="font-size: 14px; opacity: 0.7;">TACTICAL PISTOL</div>
             <div id="hp-bar"><div id="hp-fill"></div></div>
-            <div id="xp-bar"><div id="xp-fill"></div></div>
-            <div id="air-ready" style="color: #e67e22; margin-top: 10px;">🔥 AIRSTRIKE READY (G)</div>
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                <span id="wave-text">WAVE 1</span>
+                <span id="mult-text" class="multiplier-tag">X1</span>
+            </div>
+            <div id="streak-alert" style="color: var(--danger); display: none; margin-top: 5px;">🔥 AIRSTRIKE READY (G)</div>
         </div>
     </div>
 
     <div id="shop-tablet" class="tablet">
-        <h2 style="text-align: center;">BATTLE SHOP</h2>
-        <div class="btn" onclick="Game.buySquad()">BUY REINFORCEMENTS ($2000)</div><br>
-        <div class="btn" style="background: #95a5a6; border-color: #7f8c8d;" onclick="UI.toggleShop()">CLOSE</div>
+        <h1 style="text-align: center; margin: 0; color: #222;">FIELD COMMAND TABLET</h1>
+        <div class="tab-content">
+            <div class="btn" onclick="Game.buyUpgrade('damage')">UPGRADE DAMAGE ($1500)</div>
+            <div class="btn" onclick="Game.buyUpgrade('fireRate')">UPGRADE FIRE RATE ($2000)</div>
+            <div class="btn" onclick="Game.buyTeammate('RIFLE')">RECRUIT RIFLEMAN ($1000)</div>
+            <div class="btn" onclick="Game.buyTeammate('HEAVY')">RECRUIT HEAVY GUNNER ($2500)</div>
+            <div class="btn" onclick="Game.buyPerk('regen')">PERK: AUTO-REGEN ($3000)</div>
+            <div class="btn" style="background: #e74c3c; border-color: #c0392b;" onclick="UI.toggleShop()">EXIT COMMAND</div>
+        </div>
     </div>
 
-    <div class="btn" style="position: absolute; right: 20px; bottom: 20px;" onclick="UI.toggleShop()">OPEN SHOP (P)</div>
     <canvas id="gameCanvas"></canvas>
-    <script src="system.js"></script><script src="ui.js"></script><script src="game.js"></script>
+
+    <script src="system.js"></script>
+    <script src="ui.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
