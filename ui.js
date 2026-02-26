@@ -1,22 +1,19 @@
 const UI = {
-    render(game) {
-        // FPS & Stats
-        document.getElementById('fps').innerText = `FPS: ${System.fps}`;
-        document.getElementById('mc').innerText = `MC: $${game.mc}`;
-        document.getElementById('wave').innerText = `WAVE: ${game.wave}`;
-        document.getElementById('mult').innerText = `X${game.multiplier}`;
+    update(game) {
+        document.getElementById('fps').innerText = `FPS: ${Math.round(game.fps)}`;
+        document.getElementById('cash').innerText = `💰 $${Math.floor(game.mc)}`;
+        document.getElementById('weapon').innerText = `🔫 ${game.player.weapon.name}`;
         
-        // Health Bar
-        const hb = document.getElementById('hp-inner');
-        hb.style.width = `${game.hp}%`;
-        hb.style.background = game.hp < 30 ? '#ff0000' : '#00ff00';
-
-        // Airstrike Indicator
-        document.getElementById('airstrike-btn').style.opacity = game.killsSinceDeath >= 15 ? '1' : '0.3';
+        const hpBar = document.getElementById('hp-fill');
+        hpBar.style.width = `${game.player.hp}%`;
+        
+        // Airstrike Alert
+        const air = document.getElementById('air-indicator');
+        air.style.display = game.streak >= 15 ? 'block' : 'none';
     },
 
-    toggleShop() {
-        const s = document.getElementById('shop');
-        s.style.display = s.style.display === 'none' ? 'grid' : 'none';
+    showShop() {
+        const menu = document.getElementById('shop-ui');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
     }
 };
