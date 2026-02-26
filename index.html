@@ -4,51 +4,48 @@
 <meta charset="UTF-8">
 <title>Zombie Strike 3D</title>
 <style>
-    body { margin:0; overflow:hidden; font-family:sans-serif; background:#222; color:#fff; }
-    #menu { position:absolute; top:0; left:0; width:100%; height:100%; background:#000c; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-    #gameCanvas { display:none; }
-    #hud { position:absolute; top:10px; left:10px; z-index:10; color:#fff; }
-    button { padding:10px 20px; margin:5px; cursor:pointer; font-size:16px; }
+  body { margin:0; overflow:hidden; font-family:sans-serif; background:#222; color:#fff; }
+  #menu { position:absolute; top:0; left:0; width:100%; height:100%; background:#000c; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  #gameCanvas { display:none; width:100%; height:100%; }
+  #hud { position:absolute; top:10px; left:10px; z-index:10; color:#fff; }
+  button { padding:10px 20px; margin:5px; cursor:pointer; font-size:16px; }
 </style>
 </head>
 <body>
 
 <div id="menu">
-    <h1>Zombie Strike 3D</h1>
-    <label>Avatar Color: <input type="color" id="avatarColor" value="#ff0000"></label>
-    <br>
-    <label>Difficulty: 
-        <select id="difficulty">
-            <option value="easy">Easy</option>
-            <option value="normal" selected>Normal</option>
-            <option value="hard">Hard</option>
-        </select>
-    </label>
-    <br>
-    <label>Game Mode: 
-        <select id="gameMode">
-            <option value="arcade">Arcade</option>
-            <option value="survival">Survival</option>
-            <option value="hardcore">Hardcore</option>
-        </select>
-    </label>
-    <br>
-    <button id="startBtn">Start Game</button>
+  <h1>Zombie Strike 3D</h1>
+  <label>Avatar Color: <input type="color" id="avatarColor" value="#ff0000"></label><br>
+  <label>Difficulty: 
+    <select id="difficulty">
+      <option value="easy">Easy</option>
+      <option value="normal" selected>Normal</option>
+      <option value="hard">Hard</option>
+    </select>
+  </label><br>
+  <label>Game Mode: 
+    <select id="gameMode">
+      <option value="arcade">Arcade</option>
+      <option value="survival">Survival</option>
+      <option value="hardcore">Hardcore</option>
+    </select>
+  </label><br>
+  <button id="startBtn">Start Game</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
 
 <div id="hud">
-    <div id="fpsCounter">FPS: 0</div>
-    <div id="moneyDisplay">Money: 0</div>
-    <div id="scoreDisplay">Score: 0</div>
-    <div id="waveDisplay">Wave: 1</div>
-    <div id="healthDisplay">Health: 100</div>
-    <div id="powerUpDisplay">Power-ups: None</div>
-    <button id="buyTeammateBtn">Buy Teammate $100</button>
-    <button id="buyWeaponPistolBtn">Buy Pistol $50</button>
-    <button id="buyWeaponRifleBtn">Buy Rifle $200</button>
-    <button id="buyWeaponMeleeBtn">Buy Melee $100</button>
+  <div id="fpsCounter">FPS: 0</div>
+  <div id="moneyDisplay">Money: 0</div>
+  <div id="scoreDisplay">Score: 0</div>
+  <div id="waveDisplay">Wave: 1</div>
+  <div id="healthDisplay">Health: 100</div>
+  <div id="powerUpDisplay">Power-ups: None</div>
+  <button id="buyTeammateBtn">Buy Teammate $100</button>
+  <button id="buyWeaponPistolBtn">Buy Pistol $50</button>
+  <button id="buyWeaponRifleBtn">Buy Rifle $200</button>
+  <button id="buyWeaponMeleeBtn">Buy Melee $100</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script>
@@ -57,11 +54,10 @@
 <script src="ui.js"></script>
 <script>
 document.getElementById("startBtn").onclick = ()=>{
-    document.getElementById("menu").style.display="none";
-    document.getElementById("gameCanvas").style.display="block";
-    startGame(); // function in game.js that initializes scene, player, waves
+  document.getElementById("menu").style.display="none";
+  document.getElementById("gameCanvas").style.display="block";
+  startGame(); // Starts game loop in game.js
 }
 </script>
-
 </body>
 </html>
