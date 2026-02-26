@@ -1,42 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ZOMBIE STRIKE: MILITARY ARCADE</title>
+    <title>Zombie Strike: Blox Edition</title>
     <style>
-        body { margin: 0; background: #000; color: #0f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; user-select: none; }
-        #hud { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; pointer-events: none; display: flex; justify-content: space-between; }
-        .stat { background: rgba(0,20,0,0.8); border: 2px solid #0f0; padding: 10px; font-weight: bold; min-width: 100px; text-align: center; }
-        #hp-bar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 500px; height: 15px; border: 2px solid #0f0; }
-        #hp-inner { width: 100%; height: 100%; background: #0f0; transition: 0.2s; }
-        #shop { position: absolute; right: 20px; top: 100px; background: rgba(0,0,0,0.9); border: 2px solid #0f0; padding: 20px; display: none; }
-        button { background: #0f0; color: #000; border: none; padding: 10px; margin: 5px; cursor: pointer; font-weight: bold; width: 100%; }
-        button:hover { background: #fff; }
-        #fps { position: absolute; bottom: 10px; left: 10px; font-size: 12px; }
+        body { margin: 0; background: #000; color: white; font-family: 'Arial Black', sans-serif; overflow: hidden; }
+        #gui { position: absolute; top: 10px; left: 10px; pointer-events: none; width: 100%; }
+        .card { background: rgba(0,0,0,0.6); padding: 15px; border-radius: 15px; border-bottom: 5px solid rgba(0,0,0,0.3); display: inline-block; }
+        #hp-bar { width: 300px; height: 30px; background: #333; border-radius: 15px; overflow: hidden; margin-top: 10px; }
+        #hp-fill { height: 100%; background: #00ff00; transition: 0.3s; }
+        #shop-ui { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: #fff; color: #333; padding: 20px; border-radius: 20px; display: none; pointer-events: all; }
+        button { background: #00a2ff; border: none; color: white; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; margin: 5px; }
+        #fps { position: absolute; bottom: 5px; left: 5px; font-size: 10px; color: #666; }
     </style>
 </head>
 <body>
     <div id="fps">FPS: 60</div>
-    <div id="hud">
-        <div class="stat" id="mc">MC: $500</div>
-        <div class="stat" id="wave">WAVE: 1</div>
-        <div class="stat" id="mult">X1</div>
-        <button id="airstrike-btn" style="width:150px; pointer-events:all;">AIRSTRIKE (G)</button>
+    <div id="gui">
+        <div class="card">
+            <div id="cash">💰 $1000</div>
+            <div id="weapon">🔫 Pistol</div>
+            <div id="hp-bar"><div id="hp-inner"></div></div>
+        </div>
+        <div id="air-indicator" style="color: #ff3e3e; font-size: 20px; margin-top: 10px;">🔥 AIRSTRIKE READY (G)</div>
     </div>
 
-    <div id="shop">
-        <h3>REINFORCEMENTS</h3>
-        <button onclick="buySquad('RIFLE')">RIFLEMAN ($1000)</button>
-        <button onclick="buySquad('HEAVY')">HEAVY GUNNER ($2000)</button>
-        <button onclick="buySquad('MEDIC')">MEDIC ($1500)</button>
-        <button onclick="UI.toggleShop()">CLOSE</button>
+    <div id="shop-ui">
+        <h2>SOLDIER SHOP</h2>
+        <button onclick="Game.buyTeammate('Rifleman')">Buy Rifleman ($1500)</button><br>
+        <button onclick="UI.showShop()">CLOSE</button>
     </div>
 
-    <div id="hp-bar"><div id="hp-inner"></div></div>
-    
-    <button onclick="UI.toggleShop()" style="position:absolute; right:20px; bottom:20px; width:100px; pointer-events:all;">SHOP (P)</button>
+    <button style="position: absolute; right: 20px; bottom: 20px; pointer-events: all;" onclick="UI.showShop()">SHOP (P)</button>
 
     <canvas id="gameCanvas"></canvas>
-
     <script src="system.js"></script>
     <script src="ui.js"></script>
     <script src="game.js"></script>
