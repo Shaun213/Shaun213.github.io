@@ -1,9 +1,6 @@
-// system.js
-
-let waveNumber=1, zombies=[], bossSpawned=false, teammates=[];
-let money=0, score=0;
-
-const bossWaveInterval = 5;
+// system.js — Zombies, Bosses, Waves, AI Teammates, Power-ups
+let zombies = [], teammates = [], powerUps = [];
+let waveNumber = 1, bossSpawned = false, money = 0, score = 0;
 
 const zombieTypes = {
   normal:{health:20,speed:2,color:0xff0000},
@@ -26,11 +23,10 @@ function spawnZombie(type){
 }
 
 function spawnNextWave(){
-  if(waveNumber % bossWaveInterval===0 && !bossSpawned && zombies.length===0){
-    const bossType = Math.random()<0.5?'diamondMidas':'shadowMeowscles';
-    spawnZombie(bossType);
+  if(waveNumber%5===0 && !bossSpawned && zombies.length===0){
+    spawnZombie(Math.random()<0.5?'diamondMidas':'shadowMeowscles');
     bossSpawned=true;
-  }else{
+  } else {
     for(let i=0;i<waveNumber+1;i++){
       const types=['normal','fast','tank'];
       spawnZombie(types[Math.floor(Math.random()*types.length)]);
@@ -46,7 +42,7 @@ function updateWaves(){
   }
 }
 
-// Teammates
+// Teammates AI
 function spawnTeammates(player){
   teammates.forEach(tm=>{
     tm.position.lerp(player.position.clone().add(new THREE.Vector3(Math.random()*5-2.5,0,Math.random()*5-2.5)),0.02);
@@ -65,8 +61,7 @@ function spawnTeammates(player){
   });
 }
 
-// Power-ups (placeholder)
-let powerUps = [];
+// Power-ups
 function spawnPowerUp(type, x, z){
   const geom = new THREE.SphereGeometry(1,8,8);
   const mat = new THREE.MeshStandardMaterial({color:type==='health'?0x00ff00:0x0000ff});
