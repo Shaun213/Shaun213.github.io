@@ -3,104 +3,108 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let game = {
-    mc: 500, hp: 100, wave: 1, multiplier: 1, killsSinceDeath: 0,
-    player: { x: canvas.width/2, y: canvas.height/2, ammo: 30 },
-    zombies: [], bullets: [], squad: [], airstrikes: []
-};
+const Game = {
+    mc: 1000, streak: 0, fps: 0,
+    player: { x: 0, y: 0, hp: 100, weapon: { name: 'Pistol', dmg: 20, rate: 15 } },
+    zombies: [], bullets: [], squad: [],
+    lastTime: performance.now(),
 
-class Soldier {
-    constructor(type, offset) {
-        this.type = type;
-        this.offset = offset;
-        this.x = game.player.x; this.y = game.player.y;
-        this.cd = 0;
-    }
+    init() {
+        System.init();
+        this.loop();
+    },
+
+    buyTeammate(type) {
+        if (this.mc >= 1500 && this.squad.length < 3) {
+            this.mc -= 1500;
+            this.squad.push({ x: this.player.x, y: this.player.y, type: type, cd: 0 });
+        }
+    },
+
+    loop() {
+        const now = performance.now();
+        const dt = (now - this.lastTime) / 1000;
+        this.fps = 1 / dt;
+        this.lastTime = now;
+
+        this.update(dt);
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    },
+
     update(dt) {
-        // Follow Player
-        let tx = game.player.x + this.offset.x;
-        let ty = game.player.y + this.offset.y;
-        this.x += (tx - this.x) * 0.05;
-        this.y += (ty - this.y) * 0.05;
+        // 1. Movement (WASD)
+        const speed = 300 * dt;
+        if (System.keys['KeyW']) this.player.y -= speed;
+        if (System.keys['KeyS']) this.player.y += speed;
+        if (System.keys['KeyA']) this.player.x -= speed;
+        if (System.keys['KeyD']) this.player.x += speed;
 
-        // Auto-Targeting
-        let target = game.zombies[0];
-        if (target && System.dist(this.x, this.y, target.x, target.y) < 400) {
-            if (this.cd <= 0) {
-                this.shoot(target);
-                this.cd = this.type === 'HEAVY' ? 5 : 20;
+        // 2. Camera Update
+        System.update(dt, this.player);
+
+        // 3. AI Teammate Logic
+        this.squad.forEach((bot, i) => {
+            // Follow player with Roblox "Leash" logic
+            let dist = Math.hypot(this.player.x - bot.x, this.player.y - bot.y);
+            if (dist > 100) {
+                bot.x += (this.player.x - bot.x) * 2 * dt;
+                bot.y += (this.player.y - bot.y) * 2 * dt;
             }
+            // Auto-Shoot
+            bot.cd--;
+            if(this.zombies[0] && bot.cd <= 0) {
+                this.bullets.push({x: bot.x, y: bot.y, tx: this.zombies[0].x, ty: this.zombies[0].y});
+                bot.cd = 30;
+            }
+        });
+
+        // 4. Zombie Spawning
+        if (Math.random() < 0.02) {
+            this.zombies.push({
+                x: this.player.x + (Math.random() - 0.5) * 1000,
+                y: this.player.y + (Math.random() - 0.5) * 1000,
+                hp: 50
+            });
         }
-        this.cd--;
-    }
-    shoot(t) {
-        game.bullets.push({x: this.x, y: this.y, angle: Math.atan2(t.y - this.y, t.x - this.x), speed: 15, dmg: 10});
-    }
-}
 
-function spawnZombie() {
-    let isBoss = game.wave % 5 === 0 && game.zombies.length === 0;
-    game.zombies.push({
-        x: Math.random() * canvas.width, y: -50,
-        hp: isBoss ? 2000 : 20 * game.wave,
-        maxHp: isBoss ? 2000 : 20 * game.wave,
-        isBoss: isBoss,
-        speed: isBoss ? 0.5 : 1 + Math.random()
-    });
-}
+        UI.update(this);
+    },
 
-function loop(time) {
-    const dt = System.update(time);
-    ctx.fillStyle = '#050505';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    draw() {
+        ctx.fillStyle = '#1e1e1e'; // Dark background
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Render Squad
-    game.squad.forEach(s => {
-        s.update(dt);
-        ctx.fillStyle = s.type === 'HEAVY' ? '#f1c40f' : '#3498db';
-        ctx.fillRect(s.x-15, s.y-15, 30, 30);
-    });
+        ctx.save();
+        // CAMERA CENTER LOGIC
+        ctx.translate(canvas.width/2 - System.camera.x, canvas.height/2 - System.camera.y);
+        if(System.shake > 0) ctx.translate(Math.random()*5, Math.random()*5);
 
-    // Update Zombies
-    for (let i = game.zombies.length - 1; i >= 0; i--) {
-        let z = game.zombies[i];
-        let angle = Math.atan2(game.player.y - z.y, game.player.x - z.x);
-        z.x += Math.cos(angle) * z.speed;
-        z.y += Math.sin(angle) * z.speed;
-
-        // Draw Zombie
-        ctx.fillStyle = z.isBoss ? '#e74c3c' : '#2ecc71';
-        ctx.fillRect(z.x-10, z.y-10, z.isBoss ? 50 : 20, z.isBoss ? 50 : 20);
-
-        // Damage Player
-        if (System.dist(z.x, z.y, game.player.x, game.player.y) < 30) {
-            game.hp -= 0.1;
-            game.multiplier = 1; // Reset multiplier on hit
+        // Draw Grid (Roblox floor feel)
+        ctx.strokeStyle = '#333';
+        for(let i=-2000; i<2000; i+=100) {
+            ctx.beginPath(); ctx.moveTo(i, -2000); ctx.lineTo(i, 2000); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-2000, i); ctx.lineTo(2000, i); ctx.stroke();
         }
-    }
 
-    // Draw Particles
-    System.particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.size || 2, p.size || 2);
-    });
-    ctx.globalAlpha = 1;
+        // Draw Player (Cartoonish Box)
+        ctx.fillStyle = '#00a2ff';
+        ctx.fillRect(this.player.x - 25, this.player.y - 25, 50, 50);
 
-    UI.render(game);
-    requestAnimationFrame(loop);
-}
+        // Draw Squad
+        this.squad.forEach(b => {
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(b.x - 20, b.y - 20, 40, 40);
+        });
 
-// Controls & Purchases
-window.buySquad = (type) => {
-    let prices = {RIFLE: 1000, HEAVY: 2000, MEDIC: 1500};
-    if (game.mc >= prices[type] && game.squad.length < 3) {
-        game.mc -= prices[type];
-        let offset = {x: (game.squad.length + 1) * -40, y: 40};
-        game.squad.push(new Soldier(type, offset));
+        // Draw Zombies
+        this.zombies.forEach(z => {
+            ctx.fillStyle = '#44ff44';
+            ctx.fillRect(z.x - 20, z.y - 20, 40, 40);
+        });
+
+        ctx.restore();
     }
 };
 
-System.init();
-setInterval(spawnZombie, 2000);
-requestAnimationFrame(loop);
+Game.init();
