@@ -1,17 +1,22 @@
 const UI = {
-    render(game) {
+    updateDisplay(game) {
         document.getElementById('mc-display').innerText = Math.floor(game.mc);
-        document.getElementById('mult-text').innerText = `X${game.mult}`;
         document.getElementById('hp-fill').style.width = `${game.player.hp}%`;
-        document.getElementById('wave-text').innerText = `WAVE ${game.wave}`;
-        document.getElementById('fps-box').innerText = `FPS: ${Math.round(game.fps)}`;
+        document.getElementById('mult-display').innerText = `X${game.mult}`;
+        document.getElementById('wave-display').innerText = `WAVE ${game.wave}`;
         
-        const alert = document.getElementById('streak-alert');
-        alert.style.display = game.streak >= 15 ? 'block' : 'none';
+        const streakMsg = document.getElementById('killstreak-msg');
+        streakMsg.style.display = game.streak >= 15 ? 'block' : 'none';
+        
+        // Dynamic Color for Health
+        const fill = document.getElementById('hp-fill');
+        if (game.player.hp < 30) fill.style.background = "#e74c3c";
+        else fill.style.background = "#2ecc71";
     },
 
     toggleShop() {
         const tablet = document.getElementById('shop-tablet');
-        tablet.style.display = tablet.style.display === 'block' ? 'none' : 'block';
+        tablet.classList.toggle('active');
+        Game.paused = tablet.classList.contains('active');
     }
 };
